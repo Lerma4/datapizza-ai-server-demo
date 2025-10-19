@@ -1,0 +1,22 @@
+[project]
+name = "datapizza-ai-demo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "datapizza-ai>=0.0.2",
+    "datapizza-ai-clients-anthropic>=0.0.2",
+    "datapizza-ai-clients-google>=0.0.2",
+    "datapizza-ai-clients-openai>=0.0.3",
+    "datapizza-ai-tools-duckduckgo>=0.0.3",
+    "redis>=6.4.0",
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+    "requests>=2.31.0",
+    "openmeteo-requests>=1.7.3",
+    "requests-cache>=1.2.1",
+    "retry-requests>=2.0.0",
+    "numpy>=2.3.4",
+    "pandas>=2.3.3",
+]
