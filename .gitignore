@@ -1,4 +1,5 @@
 .env
+.cache.sqlite
 
 # Python-generated files
 __pycache__/
