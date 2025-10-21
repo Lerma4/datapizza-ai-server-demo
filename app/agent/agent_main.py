@@ -1,3 +1,4 @@
+from datetime import datetime
 from datapizza.agents import Agent
 from datapizza.clients.openai import OpenAIClient
 from datapizza.tools.duckduckgo import DuckDuckGoSearchTool
@@ -52,10 +53,11 @@ def run_incident_agent(prompt: str) -> str:
     
     incident_agent.can_call([weather_agent, web_search_agent])
     
-    response = incident_agent.run(prompt)
+    now = datetime.now()
+    preface = f"Today is {now.strftime('%A, %B %d, %Y')}, and the current time is {now.strftime('%I:%M %p')}." 
+    augmented_prompt = f"{preface} {prompt}"
+    response = incident_agent.run(augmented_prompt)
     return response.text
 
 if __name__ == "__main__":
     print(run_incident_agent("What's the weather on 2024-09-20 in Milan?"))
-    # Output:
-    # Tomorrow in Milan, the temperature will be 25 °C.
