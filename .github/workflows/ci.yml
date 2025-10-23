@@ -93,23 +93,23 @@ jobs:
             echo "Docker image built successfully (no push on PR)" >> $GITHUB_STEP_SUMMARY
           fi
 
-  notify:
-    name: Notify Results
-    runs-on: ubuntu-latest
-    needs: [test, build]
-    if: always()
-    permissions:
-      contents: read
-    steps:
-      - name: Slack notify
-        if: ${{ env.SLACK_WEBHOOK != '' }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_USERNAME: github-actions
-          SLACK_ICON_EMOJI: ':robot_face:'
-          SLACK_COLOR: ${{ needs.build.result == 'success' && 'good' || 'danger' }}
-          SLACK_TITLE: "CI for ${{ github.repository }} (#${{ github.run_number }})"
-          SLACK_MESSAGE: |
-            test: ${{ needs.test.result }}
-            build: ${{ needs.build.result }}
+  # notify:
+  #   name: Notify Results
+  #   runs-on: ubuntu-latest
+  #   needs: [test, build]
+  #   if: always()
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - name: Slack notify
+  #       if: ${{ env.SLACK_WEBHOOK != '' }}
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+  #         SLACK_USERNAME: github-actions
+  #         SLACK_ICON_EMOJI: ':robot_face:'
+  #         SLACK_COLOR: ${{ needs.build.result == 'success' && 'good' || 'danger' }}
+  #         SLACK_TITLE: "CI for ${{ github.repository }} (#${{ github.run_number }})"
+  #         SLACK_MESSAGE: |
+  #           test: ${{ needs.test.result }}
+  #           build: ${{ needs.build.result }}
