@@ -81,6 +81,8 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/datapizza-ai-demo:latest
           platforms: linux/amd64
           provenance: false
+        env:
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
       - name: Summary
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
