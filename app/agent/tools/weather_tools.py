@@ -60,16 +60,48 @@ def get_weather(latitude: str, longitude: str, when: str) -> str:
 
     hourly_dataframe = pd.DataFrame(data=hourly_data)
 
-    # Compute local 12:00 target and map to UTC timestamps in the dataframe
+    # Time-based retrieval: morning (06:00), noon (12:00), night (20:00)
+    # Timezone handling: compute UTC targets by subtracting location's UTC offset from local times.
     utc_offset_seconds = response.UtcOffsetSeconds()
-    target_utc = pd.Timestamp(f"{when} 12:00:00", tz="UTC") - pd.Timedelta(seconds=utc_offset_seconds)
 
-    if target_utc in set(hourly_dataframe["date"]):
-        row = hourly_dataframe.loc[hourly_dataframe["date"] == target_utc].iloc[0]
-    else:
-        # Fallback to closest hour if the exact 12:00 entry is not present
-        diffs = (hourly_dataframe["date"] - target_utc).abs()
-        row = hourly_dataframe.loc[diffs.idxmin()]
+    def extract_segment(local_time: str):
+        """
+        Return weather metrics for a requested local time on date 'when'.
+        Performs accurate UTC conversion using the location's UTC offset and
+        falls back to the closest available hour when the exact timestamp
+        is not present. Returns a dict with consistent keys across segments.
+        """
+        try:
+            if hourly_dataframe.empty:
+                raise ValueError("Hourly weather data is empty.")
+            target_utc = pd.Timestamp(f"{when} {local_time}", tz="UTC") - pd.Timedelta(seconds=utc_offset_seconds)
+            # Exact match or closest hour fallback
+            if target_utc in set(hourly_dataframe["date"]):
+                row = hourly_dataframe.loc[hourly_dataframe["date"] == target_utc].iloc[0]
+                matched = target_utc
+            else:
+                diffs = (hourly_dataframe["date"] - target_utc).abs()
+                idx = diffs.idxmin()
+                row = hourly_dataframe.loc[idx]
+                matched = hourly_dataframe.loc[idx, "date"]
+
+            return {
+                "requested_local_time": f"{when} {local_time}",
+                "matched_utc_time": pd.Timestamp(matched).isoformat(),
+                "latitude": float(response.Latitude()),
+                "longitude": float(response.Longitude()),
+                "temperature_2m": float(row["temperature_2m"]),
+                "precipitation": float(row["precipitation"]),
+                "precipitation_probability": float(row["precipitation_probability"]),
+                "visibility": float(row["visibility"]),
+                "wind_speed_10m": float(row["wind_speed_10m"]),
+                "wind_speed_80m": float(row["wind_speed_80m"]),
+            }
+        except Exception as e:
+            return {
+                "requested_local_time": f"{when} {local_time}",
+                "error": str(e),
+            }
 
     timezone = response.Timezone()
     timezone_abbr = response.TimezoneAbbreviation()
@@ -78,19 +110,29 @@ def get_weather(latitude: str, longitude: str, when: str) -> str:
     if isinstance(timezone_abbr, (bytes, bytearray)):
         timezone_abbr = timezone_abbr.decode("utf-8", errors="replace")
 
+    # Build segments with consistent formatting
+    segments = {
+        "morning": extract_segment("06:00:00"),
+        "noon": extract_segment("12:00:00"),
+        "night": extract_segment("20:00:00"),
+    }
+
+    # Preserve existing functionality: top-level fields reflect the noon segment
+    noon_segment = segments.get("noon", {})
     result = {
-        "requested_local_time": f"{when} 12:00:00",
-        "matched_utc_time": row["date"].isoformat(),
+        "requested_local_time": noon_segment.get("requested_local_time", f"{when} 12:00:00"),
+        "matched_utc_time": noon_segment.get("matched_utc_time"),
         "latitude": float(response.Latitude()),
         "longitude": float(response.Longitude()),
         "timezone": timezone,
         "timezone_abbr": timezone_abbr,
-        "temperature_2m": float(row["temperature_2m"]),
-        "precipitation": float(row["precipitation"]),
-        "precipitation_probability": float(row["precipitation_probability"]),
-        "visibility": float(row["visibility"]),
-        "wind_speed_10m": float(row["wind_speed_10m"]),
-        "wind_speed_80m": float(row["wind_speed_80m"]),
+        "temperature_2m": noon_segment.get("temperature_2m"),
+        "precipitation": noon_segment.get("precipitation"),
+        "precipitation_probability": noon_segment.get("precipitation_probability"),
+        "visibility": noon_segment.get("visibility"),
+        "wind_speed_10m": noon_segment.get("wind_speed_10m"),
+        "wind_speed_80m": noon_segment.get("wind_speed_80m"),
+        "time_segments": segments,
     }
 
     return json.dumps(result)
