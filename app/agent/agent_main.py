@@ -4,7 +4,7 @@ from datapizza.clients.openai import OpenAIClient
 from datapizza.tools.duckduckgo import DuckDuckGoSearchTool
 from app.config import get_openai_api_key
 from app.agent.tools.weather_tools import get_weather
-from app.agent.tools.search_tools import web_search
+# Removed unused import of web_search
 
 client = OpenAIClient(api_key=get_openai_api_key(), model="gpt-4o-mini")
 

@@ -1,11 +1,5 @@
 from app.main import app
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.post("/agent")
-def run_agent(prompt: str):
-    result = run_weather_agent(prompt)
-    return {"prompt": prompt, "result": result}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
