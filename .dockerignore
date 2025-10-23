@@ -1,0 +1,50 @@
+# Version control
+.git
+.gitignore
+
+# Python caches and artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environments
+.venv/
+venv/
+
+# OS / Editor junk
+.DS_Store
+*.swp
+*.swo
+*.orig
+
+# Environment files (set via runtime secrets/vars)
+.env
+.env.*
+*.env
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+.temp/
+.cache/
+
+# Test and coverage output
+.pytest_cache/
+.coverage*
+htmlcov/
+
+# Node (if present)
+node_modules/
+
+# Build/Dist directories (not needed in final image)
+dist/
+build/
+
+# Not required docs/dev assets
+*.ipynb
+
+# Keep project manifests required for dependency install
+# (Do NOT ignore pyproject.toml or uv.lock)
