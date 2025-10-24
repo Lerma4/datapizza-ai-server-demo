@@ -4,6 +4,7 @@ from datapizza.clients.openai import OpenAIClient
 from datapizza.tools.duckduckgo import DuckDuckGoSearchTool
 from app.config import get_openai_api_key
 from app.agent.tools.weather_tools import get_weather
+from app.agent.tools.daily_news_rss_tools import daily_news_rss_tools
 # Removed unused import of web_search
 
 client = OpenAIClient(api_key=get_openai_api_key(), model="gpt-4o-mini")
@@ -50,11 +51,21 @@ def run_incident_agent(prompt: str) -> str:
         client=client
     )
     
-    web_search_agent = Agent(
-        name="web_search_expert",
+    # web_search_agent = Agent(
+    #     name="web_search_expert",
+    #     client=client,
+    #     system_prompt="You are a web search expert. You can search the web for information.",
+    #     tools=[DuckDuckGoSearchTool()]
+    # )
+    
+    daily_news_agent = Agent(
+        name="daily_news_expert",
         client=client,
-        system_prompt="You are a web search expert. You can search the web for information.",
-        tools=[DuckDuckGoSearchTool()]
+        system_prompt="""You are a news expert specialized in TODAY'S Italian news. 
+        You MUST use the daily_news_rss_search tool to find news published TODAY only.
+        Focus on traffic, transport, strikes, road closures, accidents, and mobility issues.
+        Always search with relevant keywords like 'traffico', 'sciopero', 'chiusura strada', 'incidente', 'trasporti'.""",
+        tools=[daily_news_rss_tools]  # Funzione con @tool decorator
     )
     
     incident_agent = Agent(
@@ -63,7 +74,7 @@ def run_incident_agent(prompt: str) -> str:
         client=client
     )
     
-    incident_agent.can_call([weather_agent, web_search_agent])
+    incident_agent.can_call([weather_agent, daily_news_agent])
     
     now = datetime.now()
     preface = f"Today is {now.strftime('%A, %B %d, %Y')}, and the current time is {now.strftime('%I:%M %p')}." 
